@@ -164,7 +164,7 @@ const allSection = document.querySelectorAll(".section");
 
 const revealSection = function (entries, observer) {
   const [entry] = entries;
-  console.log(entry);
+  // console.log(entry);
 
   if (!entry.isIntersecting) return;
 
@@ -179,9 +179,80 @@ const sectionObserve = new IntersectionObserver(revealSection, {
 
 allSection.forEach((section) => {
   sectionObserve.observe(section);
-  section.classList.add("section--hidden");
+  // section.classList.add("section--hidden");
 });
 
+// Lazy Loading Images /////
+const imgTargets = document.querySelectorAll("img[data-src]");
+// console.log(imgTargets);
+
+const loadImage = function (entries, observer) {
+  const [entry] = entries;
+  if (!entry.isIntersecting) return;
+  entry.target.src = entry.target.dataset.src;
+  entry.target.addEventListener("load", function () {
+    entry.target.classList.remove("lazy-img");
+  });
+  observer.unobserve(entry.target);
+};
+
+const imgObserver = new IntersectionObserver(loadImage, {
+  root: null,
+  threshold: 0,
+  rootMargin: "200px",
+});
+imgTargets.forEach((img) => imgObserver.observe(img));
+
+// Working On Sliders
+const slides = document.querySelectorAll(".slide");
+const slider = document.querySelector(".slider");
+const btnLeft = document.querySelector(".slider__btn--left");
+const btnRight = document.querySelector(".slider__btn--right");
+const dotsContainer = document.querySelector(".dots");
+let curSlide = 0;
+let maxSlide = slides.length;
+
+const createDots = function () {
+  slides.forEach(function (_, i) {
+    dotsContainer.insertAdjacentHTML(
+      "beforeend",
+      `<button class="dots_dot" data-slide="${i}"></button>`
+    );
+  });
+};
+createDots();
+const gotoSlide = function (slide) {
+  slides.forEach(
+    (s, i) => (s.style.transform = `translateX(${100 * (i - slide)}%)`)
+  );
+};
+const nextSlide = function () {
+  if (curSlide === maxSlide - 1) {
+    curSlide = 0;
+  } else {
+    curSlide++;
+  }
+  gotoSlide(curSlide);
+};
+const prevSlide = function () {
+  if (curSlide === 0) {
+    curSlide = maxSlide - 1;
+  } else {
+    curSlide--;
+  }
+  gotoSlide(curSlide);
+};
+gotoSlide(0);
+
+btnRight.addEventListener("click", nextSlide);
+btnLeft.addEventListener("click", prevSlide);
+
+document.addEventListener("keydown", function (e) {
+  console.log(e.key);
+  if (e.key === "ArrowLeft") prevSlide();
+  e.key === "ArrowRight" && nextSlide();
+});
+// 0 100% 200% 300%
 ///////////////////////
 ///////////////////////
 // console.log(document.documentElement);
